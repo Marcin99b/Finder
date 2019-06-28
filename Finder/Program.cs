@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -28,26 +29,25 @@ namespace Finder
 
             foreach (var line in lines)
             {
-                var startIndex = 0;
+                var index = 0;
                 var length = 2;
 
-                while (startIndex <= lines.Count)
+                while (index <= lines.Count)
                 {
-                    var currentSubstring = line.Skip(startIndex).Take(length).ToList();
+                    var currentSubstring = line.Skip(index).Take(length).ToList();
 
-                    var containsSubstring = this.FindSubstringsWhereContains(currentSubstring, lines);
-                    if (containsSubstring.Count >= 3)
+                    if (!results.Contains(currentSubstring) && lines.FindSubstringsWhereContains(currentSubstring).Count >= 3)
                     {
                         results.Add(currentSubstring);
                     }
 
-                    if (startIndex + length < line.Count)
+                    if (index + length < line.Count)
                     {
                         length++;
                     }
                     else
                     {
-                        startIndex++;
+                        index++;
                         length = 2;
                     }
                 }
@@ -56,18 +56,19 @@ namespace Finder
             return results.OrderByDescending(x => x.Count).First();
         }
 
-        private List<List<string>> FindSubstringsWhereContains(List<string> current,
-            List<List<string>> lines)
+    }
+
+    static class SubstringExtensions
+    {
+        public static List<List<string>> FindSubstringsWhereContains(this List<List<string>> lines, List<string> current)
         {
             var results = lines.Where(x =>
             {
-                var isEqual = false;
                 var index = 0;
                 foreach (var element in x)
                 {
                     if (element == current[index])
                     {
-                        isEqual = true;
                         index++;
                         if (index == current.Count)
                         {
@@ -76,7 +77,6 @@ namespace Finder
                     }
                     else
                     {
-                        isEqual = false;
                         index = 0;
                     }
                 }
